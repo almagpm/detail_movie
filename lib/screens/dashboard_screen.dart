@@ -18,14 +18,14 @@ class DashboardScreen extends StatelessWidget {
           const UserAccountsDrawerHeader(
               currentAccountPicture: CircleAvatar(
                 backgroundImage:
-                    NetworkImage('https://i.pravatar.cc/150?img=63'),
+                    NetworkImage('https://i.pravatar.cc/150?img=10'),
               ),
-              accountName: Text('Andres Roque Rangel'),
-              accountEmail: Text('20030928@itcelaya.edu.mx')),
+              accountName: Text('Alma Gabriela Ponce Morales'),
+              accountEmail: Text('20030274@itcelaya.edu.mx')),
           const ListTile(
             leading: Icon(Icons.phone),
-            title: Text('Practica N'),
-            subtitle: Text('Aqui ira la descripción si tuviera una.'),
+            title: Text('Practica 1'),
+            subtitle: Text('Descripción'),
             trailing: Icon(Icons.chevron_right),
           ),
           ListTile(
