@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:pmsn2024/screens/dashboard_screen.dart';
+import 'package:pmsn2024/screens/despensa_screen.dart';
+import 'package:pmsn2024/screens/signup_screen.dart';
 import 'package:pmsn2024/screens/splash_screen.dart';
+import 'package:pmsn2024/settings/app_value_notifier.dart';
+import 'package:pmsn2024/settings/theme.dart';
 
-void main() => runApp( MyApp());
+void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget{
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SplashScreen(),
+  Widget build(BuildContext context){
+    return ValueListenableBuilder(
+      valueListenable: AppValueNotifier.banTheme,
+      builder: (context, value, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: value ? ThemeApp.darkTheme(context) : ThemeApp.lightTheme(context),
+          home: SplashCreen(),
+          routes: {
+            "/dash" : (BuildContext context) => DashboardScreen(),
+            "/signup" : (BuildContext context) => SignUp(),
+            "/despensa" : (BuildContext context) => DespensaScreen(),
+          },
+        );
+      },
     );
   }
 }
