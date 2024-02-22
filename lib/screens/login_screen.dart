@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
         height: MediaQuery.of(context).size.height,
         decoration: const BoxDecoration(
             image: DecorationImage(
-                fit: BoxFit.cover, image: AssetImage('images/fondo.jpg'))),
+                fit: BoxFit.cover, image: AssetImage('images/signup.jpg'))),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -91,7 +91,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       SignInButton(Buttons.GitHub, onPressed: () {}),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.purple, // Color morado
+                          primary: Colors.grey, // Color gris para el fondo del botón
+                          onPrimary: Colors.black, // Color negro para el texto del botón
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0), // Bordes redondeados
                           ),
@@ -101,6 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushNamed(context, "/signup");
                         },
                       ),
+
                                           ],
                   ),
                 )),
