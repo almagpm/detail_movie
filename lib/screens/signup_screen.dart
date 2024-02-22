@@ -20,13 +20,45 @@ class ImageSelector extends StatefulWidget {
 class _ImageSelectorState extends State<ImageSelector> {
   XFile? _image;
 
-  Future<void> _getImage() async {
+  Future<void> _getImage(ImageSource source) async {
     final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(source: source);
 
     setState(() {
       _image = image;
     });
+  }
+
+  Future<void> _selectImage() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Seleccionar fuente de imagen"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                GestureDetector(
+                  child: Text("Galería"),
+                  onTap: () {
+                    _getImage(ImageSource.gallery);
+                    Navigator.of(context).pop();
+                  },
+                ),
+                Padding(padding: EdgeInsets.all(8.0)),
+                GestureDetector(
+                  child: Text("Cámara"),
+                  onTap: () {
+                    _getImage(ImageSource.camera);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -36,7 +68,7 @@ class _ImageSelectorState extends State<ImageSelector> {
         Container(
           child: _image == null
               ? InkWell(
-                  onTap: _getImage,
+                  onTap: _selectImage,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -49,13 +81,13 @@ class _ImageSelectorState extends State<ImageSelector> {
                   alignment: Alignment.center,
                   children: [
                     CircleAvatar(
-                      radius:  50,
+                      radius: 50,
                       backgroundImage: FileImage(File(_image!.path)),
                     ),
                     Positioned(
                       bottom: 0,
                       child: IconButton(
-                        onPressed: _getImage,
+                        onPressed: _selectImage,
                         icon: Icon(Icons.edit),
                       ),
                     ),
