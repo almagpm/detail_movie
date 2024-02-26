@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pmsn2024/screens/dashboard_screen.dart';
 import 'package:pmsn2024/screens/despensa_screen.dart';
+import 'package:pmsn2024/screens/onboarding_screen.dart';
 import 'package:pmsn2024/screens/signup_screen.dart';
 import 'package:pmsn2024/screens/splash_screen.dart';
 import 'package:pmsn2024/settings/app_value_notifier.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget{
             "/dash" : (BuildContext context) => DashboardScreen(),
             "/signup" : (BuildContext context) => SignUp(),
             "/despensa" : (BuildContext context) => DespensaScreen(),
+            "/tarea3" : (BuildContext context) => OnBoardingScreen(),
           },
         );
       },
