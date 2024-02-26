@@ -104,6 +104,7 @@ class _DespensaScreenState extends State<DespensaScreen> {
             }else{
               if(snapshot.hasData){
                 return Container();
+                // Se llama el snapshot data y posteriormente se retorna la informacionn del item
               }else{
                 return Center(child: CircularProgressIndicator(),);
               }
@@ -114,3 +115,35 @@ class _DespensaScreenState extends State<DespensaScreen> {
     );
   }
 }
+
+Widget itemDespensa(ProductosModel producto){
+  return Container(
+    margin: EdgeInsets.only(top: 10),
+    decoration: BoxDecoration(
+      color:  Colors.greenAccent,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    height: 100,
+    child: Column(
+      children: [
+        Text('${producto.nomProducto!}'),
+        Text('${producto.nomProducto!}'),
+        Row (
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+          IconButton(onPressed: (){
+            //Show Modal deberia ir aqui para mostrar el formulario para editar
+          }, icon: Icon(Icons.edit)),
+          IconButton(onPressed: (){}, icon: Icon(Icons.delete)),
+        ],
+        )
+
+      ]
+    ),
+  );
+  //En show modal se manda un contexto y un producto que puede ser nulo
+}
+
+
+
+
