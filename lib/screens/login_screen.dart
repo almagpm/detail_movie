@@ -88,26 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         });
                       }),
                       SignInButton(Buttons.Facebook, onPressed: () {}),
-                      SignInButton(Buttons.Apple, onPressed: () {
-                        setState(() {
-                          isLoading = !isLoading;
-                        });
-                        Future.delayed(const Duration(milliseconds: 5000), () {
-                          /*Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const DashboardScreen(),
-                              ));*/
-                          Navigator.pushNamed(context, "/tarea3")
-                              .then((value) => {
-                                    setState(() {
-                                      isLoading = !isLoading;
-                                    })
-                                  });
-                        });
-
-
-                      }),
+                      
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           primary: Colors.grey, // Color gris para el fondo del botón
