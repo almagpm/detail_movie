@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pmsn2024/screens/dashboard_screen.dart';
 import 'package:pmsn2024/screens/despensa_screen.dart';
@@ -8,7 +9,21 @@ import 'package:pmsn2024/screens/splash_screen.dart';
 import 'package:pmsn2024/settings/app_value_notifier.dart';
 import 'package:pmsn2024/settings/theme.dart';
 
-void main() => runApp(MyApp());
+void main() async {
+  
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey:
+          "AIzaSyD1Hb7EsSHj2juDIRMdBu51Nexa4pQBkzI", // paste your api key here
+      appId:
+          "com.example.pmsn2024", //paste your app id here
+      messagingSenderId: "255309806773", //paste your messagingSenderId here
+      projectId: "pmsn24-9766f", //paste your project id here
+    ),
+  );
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget{
   const MyApp({super.key});

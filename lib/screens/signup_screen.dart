@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pmsn2024/services/email_auth_firebase.dart';
 import 'dart:io';
 
 import 'transition.dart'; // Importa la clase de transición
@@ -63,6 +64,7 @@ class _ImageSelectorState extends State<ImageSelector> {
 
   @override
   Widget build(BuildContext context) {
+     
     return Column(
       children: <Widget>[
         Container(
@@ -100,10 +102,14 @@ class _ImageSelectorState extends State<ImageSelector> {
 }
 
 class _SignUpState extends State<SignUp> {
+  final authFirebase = EmailAuthFirebase();
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    final conName = TextEditingController();
+    final conEmail = TextEditingController();
+    final conPwd = TextEditingController();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -164,6 +170,7 @@ class _SignUpState extends State<SignUp> {
                                       color: Colors.white,
                                     ),
                                     child: TextFormField(
+                                      controller: conName,
                                       style: TextStyle(color: Colors.black),
                                       decoration: InputDecoration(
                                         labelText: 'Nombre',
@@ -185,6 +192,7 @@ class _SignUpState extends State<SignUp> {
                                       color: Colors.white,
                                     ),
                                     child: TextFormField(
+                                      controller: conEmail,
                                       style: TextStyle(color: Colors.black),
                                       decoration: InputDecoration(
                                         labelText: 'Email',
@@ -208,6 +216,7 @@ class _SignUpState extends State<SignUp> {
                                       color: Colors.white,
                                     ),
                                     child: TextFormField(
+                                      controller: conPwd,
                                       style: TextStyle(color: Colors.black),
                                       decoration: InputDecoration(
                                         labelText: 'Contraseña',
@@ -250,6 +259,27 @@ class _SignUpState extends State<SignUp> {
           ),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
+              
+              if (_formKey.currentState!.validate()) {
+                              authFirebase
+                                  .signUpUser(
+                                name: conName.text,
+                                password: conPwd.text,
+                                email: conEmail.text,
+                              )
+                                  .then(
+                                (value) {
+                                  if (value) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Se registró el usuario.'),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            }
               // Si el formulario es válido, realiza la acción deseada
               // Por ejemplo, enviar los datos del formulario a un servidor
             }
