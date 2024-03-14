@@ -1,16 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:pmsn2024/model/popular_model.dart';
+import 'package:pmsn2024/network/api_trailer.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class DetailMovieScreen extends StatefulWidget {
- const DetailMovieScreen({super.key});
+ const DetailMovieScreen({Key? key}) : super(key: key);
 
  @override
  State<DetailMovieScreen> createState() => _DetailMovieScreenState();
 }
 
 class _DetailMovieScreenState extends State<DetailMovieScreen> {
- @override
- Widget build(BuildContext context) {
+  late YoutubePlayerController _controller;
+  bool isLoading = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadTrailer();
+  }
+
+  void _loadTrailer() async {
+    final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
+    final trailerFetcher = MovieTrailerFetcher();
+    
+    try {
+      final trailers = await trailerFetcher.getTrailers(popularModel.id!);
+      if (trailers.isNotEmpty) {
+        final trailerId = YoutubePlayer.convertUrlToId(trailers[0]);
+        if (trailerId != null) {
+          setState(() {
+            _controller = YoutubePlayerController(
+              initialVideoId: trailerId,
+              flags: YoutubePlayerFlags(
+                autoPlay: false,
+                mute: false,
+              ),
+            );
+            isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error cargando el trailer: $e');
+    }
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
     final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
 
     // Calcular el porcentaje de popularidad
@@ -26,16 +72,16 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
               children: [
                 // Imagen de la película
                 Container(
-                 decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: NetworkImage('https://image.tmdb.org/t/p/w500/${popularModel.backdropPath}'),
                     ),
-                 ),
+                  ),
                 ),
                 // Gradiente de difuminado hacia abajo
                 Container(
-                 decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -44,34 +90,34 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                         Colors.black,
                       ],
                     ),
-                 ),
+                  ),
                 ),
                 // Título de la película y su título original
                 Positioned(
-                 bottom: 20,
-                 left: 20,
-                 right: 20,
-                 child: Column(
-                   crossAxisAlignment: CrossAxisAlignment.start,
-                   children: [
-                     Text(
-                       popularModel.title!,
-                       style: TextStyle(
-                         fontSize: 24,
-                         color: Colors.white,
-                       ),
-                     ),
-                     SizedBox(height: 5), // Espacio entre los títulos
-                     Text(
-                       popularModel.originalTitle!,
-                       style: TextStyle(
-                         fontSize: 18,
-                         color: Colors.white,
-                         fontStyle: FontStyle.italic,
-                       ),
-                     ),
-                   ],
-                 ),
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        popularModel.title!,
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 5), // Espacio entre los títulos
+                      Text(
+                        popularModel.originalTitle!,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -83,8 +129,8 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
               color: Colors.black,
               child: SingleChildScrollView(
                 child: Padding(
-                 padding: const EdgeInsets.all(20.0), // Agrega un padding alrededor del contenido
-                 child: Column(
+                  padding: const EdgeInsets.all(20.0), // Agrega un padding alrededor del contenido
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
@@ -98,9 +144,10 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      SizedBox(height: 20),
+                      
+                      SizedBox(height: 30),
                       Text(
-                        'Ranking:',
+                        'Ranking',
                         style: TextStyle(
                           fontSize: 24,
                           color: Colors.white,
@@ -113,16 +160,26 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                         backgroundColor: Colors.grey[300]!,
                         valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 79, 88, 169)),
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 30),
+                       // Espacio entre los títulos
                       Text(
-                        '${popularityPercentage.toStringAsFixed(2)}%',
+                        'Trailer',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 30,
                           color: Colors.white,
                         ),
                       ),
+                      SizedBox(height: 5),
+                      isLoading
+                          ? CircularProgressIndicator() 
+                          : _controller != null
+                              ? YoutubePlayer(
+                                  controller: _controller,
+                                  showVideoProgressIndicator: true,
+                                )
+                              : Text('No se encontró ningún trailer'), 
                     ],
-                 ),
+                  ),
                 ),
               ),
             ),
@@ -130,5 +187,11 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
         ],
       ),
     );
- }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
 }
