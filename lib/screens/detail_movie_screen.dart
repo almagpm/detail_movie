@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:pmsn2024/model/popular_model.dart';
+import 'package:pmsn2024/network/api_lista.dart';
 import 'package:pmsn2024/network/api_trailer.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class DetailMovieScreen extends StatefulWidget {
- const DetailMovieScreen({Key? key}) : super(key: key);
+  const DetailMovieScreen({Key? key}) : super(key: key);
 
- @override
- State<DetailMovieScreen> createState() => _DetailMovieScreenState();
+  @override
+  State<DetailMovieScreen> createState() => _DetailMovieScreenState();
 }
 
 class _DetailMovieScreenState extends State<DetailMovieScreen> {
   late YoutubePlayerController _controller;
   bool isLoading = true;
+  bool isFavorite = false; // Variable para controlar si se ha agregado a favoritos
+  final ApiFavorites apiFavorites = ApiFavorites(); // Instancia de ApiFavorites
 
   @override
   void didChangeDependencies() {
@@ -53,7 +56,23 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
     }
   }
 
-
+  void _toggleFavorite() async {
+    final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
+    try {
+      if (isFavorite) {
+        await apiFavorites.removeFromFavorites(popularModel.id!);
+        print('Película eliminada de favoritos');
+      } else {
+        await apiFavorites.addToFavorites(popularModel.id!);
+        print('Película agregada a favoritos');
+      }
+      setState(() {
+        isFavorite = !isFavorite; // Cambia el estado de favorito al contrario del estado actual
+      });
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +82,18 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
     double popularityPercentage = (popularModel.voteAverage! / 10) * 100; // Asumiendo que 1000 es el valor máximo posible
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Detalles'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: Colors.black,
+            ),
+            onPressed: _toggleFavorite, // Llama al método para agregar o eliminar de favoritos
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Parte superior de la pantalla que contiene la imagen y el título de la película

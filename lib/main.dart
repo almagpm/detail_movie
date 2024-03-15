@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:pmsn2024/screens/dashboard_screen.dart';
 import 'package:pmsn2024/screens/despensa_screen.dart';
 import 'package:pmsn2024/screens/detail_movie_screen.dart';
+import 'package:pmsn2024/screens/favoritas_screen.dart';
 import 'package:pmsn2024/screens/popular_movies_screen.dart';
 import 'package:pmsn2024/screens/signup_screen.dart';
 import 'package:pmsn2024/screens/splash_screen.dart';
 import 'package:pmsn2024/settings/app_value_notifier.dart';
 import 'package:pmsn2024/settings/theme.dart';
+
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   
@@ -22,6 +26,8 @@ void main() async {
       projectId: "pmsn24-9766f", //paste your project id here
     ),
   );
+  await Hive.initFlutter();
+  await Hive.openBox('favorites');
   runApp(MyApp());
 }
 
@@ -43,6 +49,7 @@ class MyApp extends StatelessWidget{
             "/despensa" : (BuildContext context) => DespensaScreen(),
             "/movies" : (BuildContext context) => const PopularMoviesScreen(),
             "/detail": (BuildContext context) => const DetailMovieScreen(),
+            "/favoritas": (BuildContext context) => const FavoriteMoviesScreen(),
 
           },
         );
