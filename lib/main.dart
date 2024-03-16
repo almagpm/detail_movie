@@ -5,8 +5,10 @@ import 'package:pmsn2024/screens/despensa_screen.dart';
 import 'package:pmsn2024/screens/detail_movie_screen.dart';
 import 'package:pmsn2024/screens/favoritas_screen.dart';
 import 'package:pmsn2024/screens/popular_movies_screen.dart';
+import 'package:pmsn2024/screens/products_firebase_screen.dart';
 import 'package:pmsn2024/screens/signup_screen.dart';
 import 'package:pmsn2024/screens/splash_screen.dart';
+import 'package:pmsn2024/services/products_firebase.dart';
 import 'package:pmsn2024/settings/app_value_notifier.dart';
 import 'package:pmsn2024/settings/theme.dart';
 
@@ -50,6 +52,7 @@ class MyApp extends StatelessWidget{
             "/movies" : (BuildContext context) => const PopularMoviesScreen(),
             "/detail": (BuildContext context) => const DetailMovieScreen(),
             "/favoritas": (BuildContext context) => const FavoriteMoviesScreen(),
+            "/productsFirebase": (BuildContext context) => const ProductsFirebaseScreen(),
 
           },
         );
