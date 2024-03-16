@@ -5,25 +5,27 @@ import 'package:pmsn2024/network/api_trailer.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class DetailMovieScreen extends StatefulWidget {
-  const DetailMovieScreen({Key? key}) : super(key: key);
+ const DetailMovieScreen({Key? key}) : super(key: key);
 
-  @override
-  State<DetailMovieScreen> createState() => _DetailMovieScreenState();
+ @override
+ State<DetailMovieScreen> createState() => _DetailMovieScreenState();
 }
 
 class _DetailMovieScreenState extends State<DetailMovieScreen> {
-  late YoutubePlayerController _controller;
-  bool isLoading = true;
-  bool isFavorite = false; // Variable para controlar si se ha agregado a favoritos
-  final ApiFavorites apiFavorites = ApiFavorites(); // Instancia de ApiFavorites
+ late YoutubePlayerController _controller;
+ bool isLoading = true;
+ bool isFavorite = false; // Variable para controlar si se ha agregado a favoritos
+ final ApiFavorites apiFavorites = ApiFavorites(); // Instancia de ApiFavorites
+ Key favoriteKey = UniqueKey(); // Clave única para forzar la reconstrucción del widget
 
-  @override
-  void didChangeDependencies() {
+ @override
+ void didChangeDependencies() {
     super.didChangeDependencies();
     _loadTrailer();
-  }
+    _checkIsFavorite(); // Llama a la función para verificar si la película ya está en favoritos
+ }
 
-  void _loadTrailer() async {
+ void _loadTrailer() async {
     final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
     final trailerFetcher = MovieTrailerFetcher();
     
@@ -54,28 +56,52 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
       });
       print('Error cargando el trailer: $e');
     }
-  }
+ }
 
-  void _toggleFavorite() async {
+ // Función para verificar si la película ya está en la lista de favoritos
+ void _toggleFavorite() async {
+ final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
+ try {
+    if (isFavorite) {
+      await apiFavorites.removeFromFavorites(popularModel.id!);
+      setState(() {
+        isFavorite = false;
+      });
+    } else {
+      await apiFavorites.addToFavorites(popularModel.id!);
+      setState(() {
+        isFavorite = true;
+      });
+    }
+    // Después de agregar o eliminar la película de favoritos, cambia la clave para forzar la reconstrucción
+    setState(() {
+      favoriteKey = UniqueKey();
+    });
+    // Asegúrate de llamar a _checkIsFavorite después de agregar a favoritos para actualizar el estado
+    _checkIsFavorite();
+ } catch (e) {
+    print('Error: $e');
+ }
+}
+
+
+
+
+ // Función para verificar si la película ya está en la lista de favoritos
+ void _checkIsFavorite() async {
     final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
     try {
-      if (isFavorite) {
-        await apiFavorites.removeFromFavorites(popularModel.id!);
-        print('Película eliminada de favoritos');
-      } else {
-        await apiFavorites.addToFavorites(popularModel.id!);
-        print('Película agregada a favoritos');
-      }
+      final favoriteMovies = await apiFavorites.getFavoriteMovies();
       setState(() {
-        isFavorite = !isFavorite; // Cambia el estado de favorito al contrario del estado actual
+        isFavorite = favoriteMovies.any((movie) => movie['id'] == popularModel.id);
       });
     } catch (e) {
-      print('Error: $e');
+      print('Error al verificar si la película está en favoritos: $e');
     }
-  }
+ }
 
-  @override
-  Widget build(BuildContext context) {
+ @override
+ Widget build(BuildContext context) {
     final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
 
     // Calcular el porcentaje de popularidad
@@ -86,6 +112,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
         title: Text('Detalles'),
         actions: [
           IconButton(
+            key: favoriteKey, // Usa la clave única aquí
             icon: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
               color: Colors.black,
@@ -103,16 +130,16 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
               children: [
                 // Imagen de la película
                 Container(
-                  decoration: BoxDecoration(
+                 decoration: BoxDecoration(
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: NetworkImage('https://image.tmdb.org/t/p/w500/${popularModel.backdropPath}'),
                     ),
-                  ),
+                 ),
                 ),
                 // Gradiente de difuminado hacia abajo
                 Container(
-                  decoration: BoxDecoration(
+                 decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -121,14 +148,14 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                         Colors.black,
                       ],
                     ),
-                  ),
+                 ),
                 ),
                 // Título de la película y su título original
                 Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: Column(
+                 bottom: 20,
+                 left: 20,
+                 right: 20,
+                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -148,7 +175,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                         ),
                       ),
                     ],
-                  ),
+                 ),
                 ),
               ],
             ),
@@ -160,8 +187,8 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
               color: Colors.black,
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0), // Agrega un padding alrededor del contenido
-                  child: Column(
+                 padding: const EdgeInsets.all(20.0), // Agrega un padding alrededor del contenido
+                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
@@ -205,12 +232,12 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                           ? CircularProgressIndicator() 
                           : _controller != null
                               ? YoutubePlayer(
-                                  controller: _controller,
-                                  showVideoProgressIndicator: true,
+                                 controller: _controller,
+                                 showVideoProgressIndicator: true,
                                 )
                               : Text('No se encontró ningún trailer'), 
                     ],
-                  ),
+                 ),
                 ),
               ),
             ),
@@ -218,11 +245,11 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
         ],
       ),
     );
-  }
+ }
 
-  @override
-  void dispose() {
+ @override
+ void dispose() {
     super.dispose();
     _controller.dispose();
-  }
+ }
 }

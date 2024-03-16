@@ -56,3 +56,4 @@ class _FavoriteMoviesScreenState extends State<FavoriteMoviesScreen> {
     );
   }
 }
+
