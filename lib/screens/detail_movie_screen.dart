@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pmsn2024/model/popular_model.dart';
+import 'package:pmsn2024/network/api_actores.dart';
 import 'package:pmsn2024/network/api_lista.dart';
 import 'package:pmsn2024/network/api_trailer.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -14,15 +15,23 @@ class DetailMovieScreen extends StatefulWidget {
 class _DetailMovieScreenState extends State<DetailMovieScreen> {
  late YoutubePlayerController _controller;
  bool isLoading = true;
- bool isFavorite = false; // Variable para controlar si se ha agregado a favoritos
- final ApiFavorites apiFavorites = ApiFavorites(); // Instancia de ApiFavorites
- Key favoriteKey = UniqueKey(); // Clave única para forzar la reconstrucción del widget
+ bool isFavorite = false; 
+ final ApiFavorites apiFavorites = ApiFavorites(); 
+ Key favoriteKey = UniqueKey(); 
+ List<String> cast = [];
+ List<Map<String, dynamic>> providers = [];
+ List<String> reviews = [];
+ bool showReviews = false;
+
 
  @override
  void didChangeDependencies() {
     super.didChangeDependencies();
     _loadTrailer();
-    _checkIsFavorite(); // Llama a la función para verificar si la película ya está en favoritos
+    _checkIsFavorite(); 
+    _loadCast();
+    _loadProviders();
+    _loadReviews();
  }
 
  void _loadTrailer() async {
@@ -58,36 +67,31 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
     }
  }
 
- // Función para verificar si la película ya está en la lista de favoritos
- void _toggleFavorite() async {
- final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
- try {
+
+void _toggleFavorite() async {
+  final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
+  try {
     if (isFavorite) {
       await apiFavorites.removeFromFavorites(popularModel.id!);
-      setState(() {
-        isFavorite = false;
-      });
     } else {
       await apiFavorites.addToFavorites(popularModel.id!);
-      setState(() {
-        isFavorite = true;
-      });
     }
-    // Después de agregar o eliminar la película de favoritos, cambia la clave para forzar la reconstrucción
+    
+    _checkIsFavorite();
+    
     setState(() {
       favoriteKey = UniqueKey();
     });
-    // Asegúrate de llamar a _checkIsFavorite después de agregar a favoritos para actualizar el estado
-    _checkIsFavorite();
- } catch (e) {
+  } catch (e) {
     print('Error: $e');
- }
+  }
 }
 
 
 
 
- // Función para verificar si la película ya está en la lista de favoritos
+
+ 
  void _checkIsFavorite() async {
     final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
     try {
@@ -100,44 +104,93 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
     }
  }
 
+ void _loadCast() async {
+    final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
+    final castFetcher = MovieCastFetcher();
+
+    try {
+      cast = await castFetcher.getCast(popularModel.id!);
+    } catch (e) {
+      print('Error cargando el elenco: $e');
+    }
+ }
+
+ void _loadProviders() async {
+  final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
+  final providerFetcher = MovieCastFetcher();
+
+  try {
+    Map<String, dynamic> providerData = await providerFetcher.getProviders(popularModel.id!);
+    setState(() {
+      providers = providerData['providers'] as List<Map<String, dynamic>>;
+    });
+  } catch (e) {
+    print('Error cargando los proveedores: $e');
+  }
+}
+
+void _loadReviews() async {
+    final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
+    final reviewFetcher = MovieCastFetcher(); 
+
+    try {
+      reviews = await reviewFetcher.getReviews(popularModel.id!);
+    } catch (e) {
+      print('Error cargando las reseñas: $e');
+    }
+ }
+
+
  @override
  Widget build(BuildContext context) {
     final popularModel = ModalRoute.of(context)!.settings.arguments as PopularModel;
 
     // Calcular el porcentaje de popularidad
-    double popularityPercentage = (popularModel.voteAverage! / 10) * 100; // Asumiendo que 1000 es el valor máximo posible
-
+    double popularityPercentage = (popularModel.voteAverage! / 10) * 100; 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detalles'),
+        backgroundColor: Color.fromARGB(255, 2, 10, 43),
+        title: Text(
+          'Detalles',
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         actions: [
           IconButton(
-            key: favoriteKey, // Usa la clave única aquí
+            key: favoriteKey, 
             icon: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: Colors.black,
+              color: Colors.white,
             ),
-            onPressed: _toggleFavorite, // Llama al método para agregar o eliminar de favoritos
+            onPressed: _toggleFavorite, 
           ),
         ],
       ),
       body: Column(
         children: [
-          // Parte superior de la pantalla que contiene la imagen y el título de la película
+          
           Expanded(
             flex: 1,
             child: Stack(
               children: [
-                // Imagen de la película
-                Container(
-                 decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: NetworkImage('https://image.tmdb.org/t/p/w500/${popularModel.backdropPath}'),
+                
+                Hero(
+                  tag: 'poster_${popularModel.id}', 
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: NetworkImage('https://image.tmdb.org/t/p/w500/${popularModel.backdropPath}'),
+                      ),
                     ),
-                 ),
+                  ),
                 ),
-                // Gradiente de difuminado hacia abajo
+                                
                 Container(
                  decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -150,7 +203,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                     ),
                  ),
                 ),
-                // Título de la película y su título original
+                
                 Positioned(
                  bottom: 20,
                  left: 20,
@@ -165,7 +218,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(height: 5), // Espacio entre los títulos
+                      SizedBox(height: 5), 
                       Text(
                         popularModel.originalTitle!,
                         style: TextStyle(
@@ -180,19 +233,32 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
               ],
             ),
           ),
-          // Parte inferior de la pantalla que muestra la descripción, el ranking y el círculo de porcentaje
+          
           Expanded(
             flex: 3,
             child: Container(
               color: Colors.black,
               child: SingleChildScrollView(
                 child: Padding(
-                 padding: const EdgeInsets.all(20.0), // Agrega un padding alrededor del contenido
+                 padding: const EdgeInsets.all(20.0), 
                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      SizedBox(height: 50),
+                       
+                      Text(
+                        'Descripciòn',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Divider(), 
+                      SizedBox(height: 20),
                       Container(
-                        padding: EdgeInsets.all(10), // Agrega un padding alrededor del texto de la descripción
+                        padding: EdgeInsets.all(10), 
+                        
                         child: Text(
                           popularModel.overview?.isNotEmpty ?? false ? popularModel.overview! : "Por el momento esta película no cuenta con una descripción",
                           style: TextStyle(
@@ -202,8 +268,11 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
+                      SizedBox(height: 20),
+                      Divider(), 
+                      SizedBox(height: 20),
+                      SizedBox(height: 20),
                       
-                      SizedBox(height: 30),
                       Text(
                         'Ranking',
                         style: TextStyle(
@@ -212,12 +281,60 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                         ),
                       ),
                       SizedBox(height: 20),
-                      CircularProgressIndicator(
-                        value: popularityPercentage / 100, // Normalizar el valor a un rango de 0.0 a 1.0
-                        strokeWidth: 10,
-                        backgroundColor: Colors.grey[300]!,
-                        valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 79, 88, 169)),
+                      Divider(), 
+                      SizedBox(height: 20),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${popularityPercentage.toStringAsFixed(2)}%', 
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: 50), 
+                             CircularProgressIndicator(
+                                value: popularityPercentage / 100, 
+                                strokeWidth: 10,
+                                backgroundColor: Colors.grey[300]!,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 79, 88, 169)),
+                              ),
+                          ],
+                        ),
+                      SizedBox(height: 20),
+                      Divider(), 
+                      SizedBox(height: 30),
+                      Text(
+                        'Actores',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                        ),
                       ),
+                      SizedBox(height: 20),
+                      Divider(), 
+                      SizedBox(height: 20),
+                      Container(
+                        height: 80, 
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: cast.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              margin: EdgeInsets.all(10),
+                              child: Text(
+                                cast[index],
+                                style: TextStyle(
+                                 fontSize: 16,
+                                 color: Colors.white,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Divider(), 
                       SizedBox(height: 30),
                        // Espacio entre los títulos
                       Text(
@@ -228,6 +345,9 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                         ),
                       ),
                       SizedBox(height: 5),
+                      SizedBox(height: 20),
+                      Divider(), 
+                      SizedBox(height: 20),
                       isLoading
                           ? CircularProgressIndicator() 
                           : _controller != null
@@ -236,6 +356,94 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                                  showVideoProgressIndicator: true,
                                 )
                               : Text('No se encontró ningún trailer'), 
+                              SizedBox(height: 30),
+                        Divider(), 
+                        SizedBox(height: 60),
+                         Text(
+                          'Proveedores',
+                          style: TextStyle(
+                            fontSize: 30,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                      Divider(), 
+                      SizedBox(height: 20),
+                        providers.isNotEmpty
+                            ? ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: providers.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    title: Text(
+                                      providers[index]['name'],
+                                      style: TextStyle(color: Colors.white), 
+                                    ),
+                                    subtitle: Text(
+                                      providers[index]['description'],
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Text(
+                                'No hay proveedores de streaming disponibles',
+                                style: TextStyle(color: const Color.fromARGB(255, 175, 175, 175)), 
+                              ),
+                            SizedBox(height: 60),
+                        ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  showReviews = !showReviews; 
+                                });
+                              },
+                              icon: Icon(
+                                Icons.comment,
+                                color: Color.fromARGB(255, 13, 50, 130),
+                              ),
+                              label: Text(
+                                'Ver Reseñas',
+                                style: TextStyle(
+                                  color:Color.fromARGB(255, 13, 50, 130), 
+                                ),
+                              ),
+                            ),
+                            if (showReviews)
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              child: reviews.isNotEmpty
+                                  ? ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: reviews.length,
+                                      itemBuilder: (context, index) {
+                                        return Column(
+                                          children: [
+                                            Divider(), 
+                                            Text(
+                                              reviews[index],
+                                              style: TextStyle(
+                                                color: Color.fromARGB(255, 177, 177, 177), // Color blanco para el texto de las reseñas
+                                              ),
+                                            ),
+                                            Divider(), // Agregar una línea después de cada reseña
+                                            SizedBox(height: 10), // Espacio de separación entre las reseñas
+                                          ],
+                                        );
+                                      },
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        'Por el momento no hay reseñas de esta película',
+                                        style: TextStyle(
+                                          color: const Color.fromARGB(255, 191, 191, 191),
+                                        ),
+                                      ),
+                                    ),
+                            ),
+
+
                     ],
                  ),
                 ),
@@ -247,9 +455,15 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
     );
  }
 
+
  @override
  void dispose() {
+    _controller.pause();
+    _controller.dispose(); 
     super.dispose();
-    _controller.dispose();
  }
 }
+
+
+
+

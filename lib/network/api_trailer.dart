@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MovieTrailerFetcher {
- static const String apiKey = '558a6043ffaf21488d74cb6f44181b9a'; // Reemplaza con tu clave de API
+ static const String apiKey = '558a6043ffaf21488d74cb6f44181b9a'; 
  static const String baseUrl = 'https://api.themoviedb.org/3/movie/';
 
  Future<List<String>> getTrailers(int movieId) async {

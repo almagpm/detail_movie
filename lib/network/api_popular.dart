@@ -17,6 +17,22 @@ class ApiPopular {
     }
     return null;
   }
+  Future<PopularModel?> getMovieDetails(int movieId) async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://api.themoviedb.org/3/movie/$movieId?api_key=558a6043ffaf21488d74cb6f44181b9a&language=es',
+      );
+
+      if (response.statusCode == 200) {
+        return PopularModel.fromMap(response.data); // Crear un objeto PopularModel desde los datos de la respuesta
+      } else {
+        throw Exception('Failed to retrieve movie details');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
 
 
 }

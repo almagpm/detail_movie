@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:pmsn2024/model/popular_model.dart';
 
 class ApiFavorites {
   final String apiKey = '558a6043ffaf21488d74cb6f44181b9a';
@@ -73,6 +74,22 @@ class ApiFavorites {
         print('Película eliminada de favoritos');
       } else {
         throw Exception('Error al eliminar la película de favoritos');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+  Future<PopularModel?> getMovieDetails(int movieId) async {
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://api.themoviedb.org/3/movie/$movieId?api_key=558a6043ffaf21488d74cb6f44181b9a&language=es',
+      );
+
+      if (response.statusCode == 200) {
+        return PopularModel.fromMap(response.data); // Crear un objeto PopularModel desde los datos de la respuesta
+      } else {
+        throw Exception('Failed to retrieve movie details');
       }
     } catch (e) {
       throw Exception('Error: $e');
