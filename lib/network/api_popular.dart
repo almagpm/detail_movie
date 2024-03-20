@@ -25,7 +25,7 @@ class ApiPopular {
       );
 
       if (response.statusCode == 200) {
-        return PopularModel.fromMap(response.data); // Crear un objeto PopularModel desde los datos de la respuesta
+        return PopularModel.fromMap(response.data); 
       } else {
         throw Exception('Failed to retrieve movie details');
       }

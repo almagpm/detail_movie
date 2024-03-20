@@ -3,8 +3,8 @@ import 'package:pmsn2024/model/popular_model.dart';
 
 class ApiFavorites {
   final String apiKey = '558a6043ffaf21488d74cb6f44181b9a';
-  final String sessionId = 'eb339ec8bbda93bd30571a67e348489c4caf0aee'; // Session ID existente
-  final String authorizedRequestToken = 'f247ac9d44b01b012dbed17754f1daea1409d669'; // Token autorizado
+  final String sessionId = 'eb339ec8bbda93bd30571a67e348489c4caf0aee'; 
+  final String authorizedRequestToken = 'f247ac9d44b01b012dbed17754f1daea1409d669'; 
 
   Future<List<Map<String, dynamic>>> getFavoriteMovies() async {
     try {
@@ -87,7 +87,7 @@ class ApiFavorites {
       );
 
       if (response.statusCode == 200) {
-        return PopularModel.fromMap(response.data); // Crear un objeto PopularModel desde los datos de la respuesta
+        return PopularModel.fromMap(response.data); 
       } else {
         throw Exception('Failed to retrieve movie details');
       }
