@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MovieCastFetcher {
- static const String apiKey = '558a6043ffaf21488d74cb6f44181b9a'; // Reemplaza con tu clave de API
+ static const String apiKey = '558a6043ffaf21488d74cb6f44181b9a'; 
  static const String baseUrl = 'https://api.themoviedb.org/3/movie/';
 
  Future<List<String>> getCast(int movieId) async {
@@ -13,7 +13,7 @@ class MovieCastFetcher {
       var data = jsonDecode(response.body);
       var results = data['cast'];
       for (var actor in results) {
-        if (actor['order'] <= 5) { // Puedes ajustar este número para mostrar más o menos actores
+        if (actor['order'] <= 5) { 
           cast.add('${actor['name']} como ${actor['character']}');
         }
       }

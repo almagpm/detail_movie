@@ -33,7 +33,7 @@ class DashboardScreen extends StatelessWidget {
             title: const Text('Mi despensa'),
             subtitle: const Text('Relacion de productos que no voy a usar'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.pushNamed(context, '/despensa'),
+            onTap: () => Navigator.pushNamed(context, '/productsFirebase'),
 
           ),
           ListTile(

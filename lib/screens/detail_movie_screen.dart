@@ -424,11 +424,11 @@ void _loadReviews() async {
                                             Text(
                                               reviews[index],
                                               style: TextStyle(
-                                                color: Color.fromARGB(255, 177, 177, 177), // Color blanco para el texto de las reseñas
+                                                color: Color.fromARGB(255, 177, 177, 177), 
                                               ),
                                             ),
-                                            Divider(), // Agregar una línea después de cada reseña
-                                            SizedBox(height: 10), // Espacio de separación entre las reseñas
+                                            Divider(),
+                                            SizedBox(height: 10),
                                           ],
                                         );
                                       },
