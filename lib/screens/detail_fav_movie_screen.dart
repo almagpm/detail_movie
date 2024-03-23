@@ -5,14 +5,14 @@ import 'package:pmsn2024/network/api_lista.dart';
 import 'package:pmsn2024/network/api_trailer.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class DetailMovieScreen extends StatefulWidget {
- const DetailMovieScreen({Key? key}) : super(key: key);
+class DetailFavScreen extends StatefulWidget {
+ const DetailFavScreen({Key? key}) : super(key: key);
 
  @override
- State<DetailMovieScreen> createState() => _DetailMovieScreenState();
+ State<DetailFavScreen> createState() => _DetailFavScreenState();
 }
 
-class _DetailMovieScreenState extends State<DetailMovieScreen> {
+class _DetailFavScreenState extends State<DetailFavScreen> {
  late YoutubePlayerController _controller;
  bool isLoading = true;
  bool isFavorite = false; 
@@ -82,10 +82,14 @@ void _toggleFavorite() async {
     setState(() {
       favoriteKey = UniqueKey();
     });
+
+    // Utilizar Navigator para volver a la pantalla de favoritos
+    Navigator.pop(context, true); // true indica que se actualizó la lista de favoritos
   } catch (e) {
     print('Error: $e');
   }
 }
+
 
 
 

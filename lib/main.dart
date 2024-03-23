@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pmsn2024/screens/dashboard_screen.dart';
 import 'package:pmsn2024/screens/despensa_screen.dart';
+import 'package:pmsn2024/screens/detail_fav_movie_screen.dart';
 import 'package:pmsn2024/screens/detail_movie_screen.dart';
 import 'package:pmsn2024/screens/favoritas_screen.dart';
 import 'package:pmsn2024/screens/popular_movies_screen.dart';
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget{
             "/movies" : (BuildContext context) => const PopularMoviesScreen(),
             "/detail": (BuildContext context) => const DetailMovieScreen(),
             "/favoritas": (BuildContext context) => const FavoriteMoviesScreen(),
+            "/detailf": (BuildContext context) => const DetailFavScreen(),
             "/productsFirebase": (BuildContext context) => const ProductsFirebaseScreen(),
 
           },

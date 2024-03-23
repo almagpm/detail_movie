@@ -1,10 +1,18 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:pmsn2024/model/popular_model.dart';
 
 class ApiFavorites {
   final String apiKey = '558a6043ffaf21488d74cb6f44181b9a';
-  final String sessionId = 'eb339ec8bbda93bd30571a67e348489c4caf0aee'; 
-  final String authorizedRequestToken = 'f247ac9d44b01b012dbed17754f1daea1409d669'; 
+  final String sessionId = 'eb339ec8bbda93bd30571a67e348489c4caf0aee';
+
+  final StreamController<void> _updateController = StreamController<void>.broadcast();
+
+  Stream<void> get updateStream => _updateController.stream;
+
+  void dispose() {
+    _updateController.close();
+  }
 
   Future<List<Map<String, dynamic>>> getFavoriteMovies() async {
     try {
@@ -46,6 +54,7 @@ class ApiFavorites {
 
       if (response.statusCode == 200) {
         print('Película agregada a favoritos');
+        _updateController.add(null); // Emitir un evento de actualización
       } else {
         print('Película agregada a favoritos');
       }
@@ -72,6 +81,7 @@ class ApiFavorites {
 
       if (response.statusCode == 200) {
         print('Película eliminada de favoritos');
+        _updateController.add(null); // Emitir un evento de actualización
       } else {
         throw Exception('Error al eliminar la película de favoritos');
       }
@@ -79,6 +89,7 @@ class ApiFavorites {
       throw Exception('Error: $e');
     }
   }
+
   Future<PopularModel?> getMovieDetails(int movieId) async {
     try {
       final dio = Dio();
@@ -87,7 +98,7 @@ class ApiFavorites {
       );
 
       if (response.statusCode == 200) {
-        return PopularModel.fromMap(response.data); 
+        return PopularModel.fromMap(response.data);
       } else {
         throw Exception('Failed to retrieve movie details');
       }

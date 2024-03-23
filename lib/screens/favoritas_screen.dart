@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pmsn2024/model/popular_model.dart';
 import 'package:pmsn2024/network/api_lista.dart'; 
@@ -11,22 +12,29 @@ class FavoriteMoviesScreen extends StatefulWidget {
 
 class _FavoriteMoviesScreenState extends State<FavoriteMoviesScreen> {
   final ApiFavorites apiFavorites = ApiFavorites();
-  late Future<List<Map<String, dynamic>>> _favoriteMoviesFuture;
+  late StreamSubscription<void> _updateSubscription;
+  List<Map<String, dynamic>> _favoriteMovies = [];
 
   @override
   void initState() {
     super.initState();
+    _updateSubscription = apiFavorites.updateStream.listen((_) {
+      _loadFavoriteMovies();
+    });
     _loadFavoriteMovies(); 
+  }
+
+  @override
+  void dispose() {
+    _updateSubscription.cancel();
+    super.dispose();
   }
 
   Future<void> _loadFavoriteMovies() async {
+    final favoriteMovies = await apiFavorites.getFavoriteMovies();
     setState(() {
-      _favoriteMoviesFuture = apiFavorites.getFavoriteMovies();
+      _favoriteMovies = favoriteMovies;
     });
-  }
-
-  Future<void> _updateFavoriteMovies() async {
-    _loadFavoriteMovies(); 
   }
 
   @override
@@ -43,18 +51,10 @@ class _FavoriteMoviesScreenState extends State<FavoriteMoviesScreen> {
       backgroundColor: Colors.black,
       body: RefreshIndicator(
         onRefresh: _loadFavoriteMovies,
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _favoriteMoviesFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('No hay películas favoritas', style: TextStyle(color: Colors.white)));
-            } else {
-              return GridView.builder(
-                itemCount: snapshot.data!.length,
+        child: _favoriteMovies.isEmpty
+            ? Center(child: Text('No hay películas favoritas', style: TextStyle(color: Colors.white)))
+            : GridView.builder(
+                itemCount: _favoriteMovies.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.7,
@@ -62,7 +62,7 @@ class _FavoriteMoviesScreenState extends State<FavoriteMoviesScreen> {
                   crossAxisSpacing: 10,
                 ),
                 itemBuilder: (context, index) {
-                  final movieId = snapshot.data![index]['id'] as int;
+                  final movieId = _favoriteMovies[index]['id'] as int;
                   final movieDetailsFuture = apiFavorites.getMovieDetails(movieId);
                   return FutureBuilder<PopularModel?>(
                     future: movieDetailsFuture,
@@ -74,36 +74,32 @@ class _FavoriteMoviesScreenState extends State<FavoriteMoviesScreen> {
                       } else if (movieSnapshot.hasData) {
                         final movieDetails = movieSnapshot.data!;
                         return GestureDetector(
-                          onTap: () async {
-                            final result = await Navigator.pushNamed(context, "/detail", arguments: movieDetails);
-                            if (result != null && result is bool && result) {
-                              Navigator.pop(context); 
-                              _updateFavoriteMovies(); 
-                            }
-                          },
-
-                          child: Hero(
-                            tag: 'poster_${movieDetails.id}',
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: FadeInImage(
-                                placeholder: AssetImage('images/loading.gif'),
-                                image: NetworkImage('https://image.tmdb.org/t/p/w500/${movieDetails.posterPath}'),
-                                fit: BoxFit.cover,
-                              ),
+                        onTap: () async {
+                          final result = await Navigator.pushNamed(context, "/detailf", arguments: movieDetails);
+                          if (result != null && result is bool && result) {
+                            // Se actualizó la lista de películas favoritas
+                            _loadFavoriteMovies(); 
+                          }
+                        },
+                        child: Hero(
+                          tag: 'poster_${movieDetails.id}',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: FadeInImage(
+                              placeholder: AssetImage('images/loading.gif'),
+                              image: NetworkImage('https://image.tmdb.org/t/p/w500/${movieDetails.posterPath}'),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        );
+                        ),
+                      );
                       } else {
                         return Center(child: Text('No se encontraron detalles de la película'));
                       }
                     },
                   );
                 },
-              );
-            }
-          },
-        ),
+              ),
       ),
     );
   }
